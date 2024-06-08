@@ -1,8 +1,6 @@
-Gallery Shooter Game for CMPM120 Spring 2024
+Bullet Hell Final Game for CMPM120 Spring 2024
 
 WASD for movement, SPACE to shoot
-
-Kill the enemies to score points, dodge their bullets and don't let them touch you.
 
 ## Credits
 - Kenney Assets [https://kenney.nl/assets](https://kenney.nl/assets)
