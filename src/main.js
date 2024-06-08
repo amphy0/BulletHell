@@ -10,9 +10,9 @@ let config = {
         pixelArt: true  // prevent pixel art from getting blurred when scaled
     },
     fps:{forceSetTimeOut: true, target: 60},
-    width: 640,
-    height: 800,
-    scene: [GameStart, ForestScene, GameOver],
+    width: 700,
+    height: 850,
+    scene: [GameStart, BossScene, GameOver],
     physics: {
         default: 'arcade',
         arcade: {
