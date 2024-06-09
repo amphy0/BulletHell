@@ -9,9 +9,22 @@ class BossScene extends Phaser.Scene {
 
     preload(){
         this.load.setPath("./assets/");
+        
+        this.load.image('player', 'KingSlime_Idle2.png');
     }
 
     create(){
+        this.anims.create({
+            key: 'boss',
+            frames: [
+                { key: 'boss1' },
+                { key: 'boss2' },
+                { key: 'boss3' },
+                { key: 'boss4' }
+            ],
+            frameRate: 6,
+            repeat: -1
+        });
         this.player = this.physics.add.sprite(320,730, "player");
         this.playerHP = 5;
         this.player.setCollideWorldBounds(true);
@@ -26,6 +39,42 @@ class BossScene extends Phaser.Scene {
         this.A_Key = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.D_Key = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.Space_Key = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+        this.spawnBoss();
+    }
+    spawnBoss(){
+        const bounds = this.physics.world.bounds;
+        const boss = this.physics.add.sprite(bounds.x+350, bounds.y+150, 'boss1').play('boss');
+        boss.setScale(5);
+        boss.hp = 1000;
+
+        enemies.add(boss);
+        let x = 0;
+        const bulletTimer = this.time.addEvent({
+            delay: 500,
+            callback: () => {
+                x += 5;
+                this.bulletPattern1(boss, 10);
+            },
+            loop: true
+        });
+    }
+    bossShootBullet(boss){
+        this.bulletPattern1(boss);
+    }
+    bulletPattern1(boss,x){
+        for(let i = 0+x; i < 45+x; i++) {
+            const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet');
+            const v = 150;
+            bullet.setVelocityX(v*Math.cos(i));
+            bullet.setVelocityY(v*Math.sin(i));
+            bullet.body.onWorldBounds = true;
+            bullet.body.world.on('worldbounds', ()=>{
+                bullet.destroy();
+            });
+
+        }
+        
     }
     update() {
         this.player.setVelocityX(0);
