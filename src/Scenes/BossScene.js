@@ -2,6 +2,7 @@ let enemies;
 let fireRate = 150;
 let lastShotTime = 0;
 let playerVelocity = 140;
+let bulletsPerSecond = 1;
 class BossScene extends Phaser.Scene {
     constructor() {
         super("BossScene");
@@ -10,7 +11,15 @@ class BossScene extends Phaser.Scene {
     preload(){
         this.load.setPath("./assets/");
         
-        this.load.image('player', 'KingSlime_Idle2.png');
+        this.load.image('player', 'ship.png');
+
+
+        this.load.image("enemyBullet", "bullet.png");
+
+        this.load.image("playerBullet", "playerbullet.png");
+
+        this.load.image("buff", "buff.png");
+        this.load.image("buff2", "buff2.png");
     }
 
     create(){
@@ -25,12 +34,16 @@ class BossScene extends Phaser.Scene {
             frameRate: 6,
             repeat: -1
         });
-        this.player = this.physics.add.sprite(320,730, "player");
+        this.player = this.physics.add.sprite(320,730, "player").setScale(0.3);
+        this.player.flipY = true;
         this.playerHP = 5;
         this.player.setCollideWorldBounds(true);
+        this.playerDamage = 10;
         
         this.bullets = this.physics.add.group();
         this.enemyBullets = this.physics.add.group();
+        this.buffs = this.physics.add.group();
+        this.buffs2 = this.physics.add.group();
         
         enemies = this.physics.add.group({collideWorldBounds: false});
         
@@ -41,6 +54,7 @@ class BossScene extends Phaser.Scene {
         this.Space_Key = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.spawnBoss();
+        this.startPlayerShooting();
     }
     spawnBoss(){
         const bounds = this.physics.world.bounds;
@@ -48,13 +62,28 @@ class BossScene extends Phaser.Scene {
         boss.setScale(5);
         boss.hp = 1000;
 
+        //boss's HP
+        boss.hpText = this.add.text(boss.x, boss.y - 60, `HP: ${boss.hp}`, {
+            fontSize: '20px',
+            fill: '#ffffff'
+        }).setOrigin(0.5, 0.5);
+
         enemies.add(boss);
         let x = 0;
+        let bulletCount = 0;
         const bulletTimer = this.time.addEvent({
             delay: 500,
             callback: () => {
-                x += 5;
-                this.bulletPattern1(boss, 10);
+                if (bulletCount < 5) {
+                    this.bulletPattern1(boss, bulletCount * 5);
+                    bulletCount++;
+                } else {
+                    bulletCount = 0;
+                    bulletTimer.paused = true;
+                    this.time.delayedCall(1000, () => {
+                        bulletTimer.paused = false;
+                    });
+                }
             },
             loop: true
         });
@@ -74,8 +103,72 @@ class BossScene extends Phaser.Scene {
             });
 
         }
-        
     }
+
+    shootBullet() {
+        const bullet = this.bullets.create(this.player.x, this.player.y - 20, 'playerBullet').setScale(0.5);
+        bullet.setVelocityY(-300);
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', () => {
+            bullet.destroy();
+        });
+    }
+    startPlayerShooting() {
+        this.time.addEvent({
+            delay: 1000 / bulletsPerSecond,   
+            callback: this.shootBullet,
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    //buff
+    dropBuff(enemy) {
+        const x = enemy.x + Phaser.Math.Between(-150, 150);
+        const y = enemy.y + Phaser.Math.Between(-50, 50);
+        const buff = this.buffs.create(x, y, 'buff').setScale(0.3);
+        buff.setVelocityY(100); 
+    }
+    dropBuff2(enemy) {
+        const x = enemy.x + Phaser.Math.Between(-150, 150);
+        const y = enemy.y + Phaser.Math.Between(-50, 50);
+        const buff2 = this.buffs2.create(x, y, 'buff2').setScale(0.3);
+        buff2.setVelocityY(100); 
+    }
+
+    collectBuff(player, buff) {
+        buff.destroy();
+        this.playerDamage += 1;  
+    }
+    collectBuff2(player, buff2) {
+        buff2.destroy(); 
+        bulletsPerSecond += 1; 
+
+        this.time.removeAllEvents();
+        this.startPlayerShooting();
+    }
+    
+
+    //damage
+    bulletHitEnemy(bullet, enemy) {
+        bullet.destroy();
+        enemy.hp -= this.playerDamage;
+        enemy.hpText.setText(`HP: ${enemy.hp}`);
+        this.dropBuff(enemy);
+        this.dropBuff2(enemy);
+        if (enemy.hp <= 0) {
+            enemy.destroy();
+            enemy.hpText.destroy();
+        }
+    }
+
+    bulletHitPlayer(player, bullet) {
+        bullet.destroy();
+        this.playerHP -= 1; // Adjust damage as needed
+    }
+
+    
+
     update() {
         this.player.setVelocityX(0);
         this.player.setVelocityY(0);
@@ -99,6 +192,8 @@ class BossScene extends Phaser.Scene {
         this.physics.overlap(this.bullets, enemies, this.bulletHitEnemy, null, this);
         this.physics.overlap(this.enemyBullets, this.player, this.bulletHitPlayer, null, this);
         this.physics.overlap(this.player, enemies, this.bulletHitPlayer, null, this);
+        this.physics.overlap(this.player, this.buffs, this.collectBuff, null, this);
+        this.physics.add.overlap(this.player, this.buffs2, this.collectBuff2, null, this);
 
         if(this.playerHP <= 0){
             this.updateScore();

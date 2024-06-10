@@ -26,11 +26,11 @@ class GameStart extends Phaser.Scene{
         this.add.image(110,450,'space1').setScale(3);
         this.add.image(150,450,'space2').setScale(3);
         this.add.image(190,450,'space3').setScale(3);
-        this.add.image(430,300,'boss').setScale(1.5)
+        this.add.image(430,300,'boss1').setScale(1.5);
         this.add.bitmapText(150,200,"kenneyFont", "Controls", 32).setOrigin(0.5);
         this.add.bitmapText(150,350,"kenneyFont", "to move", 32).setOrigin(0.5);
         this.add.bitmapText(150,500,"kenneyFont", "to shoot", 32).setOrigin(0.5);
-        this.add.bitmapText(480,200,"kenneyFont", "Shoot the enemies", 32).setOrigin(0.5);
+        this.add.bitmapText(480,200,"kenneyFont", "Finish the Boss", 32).setOrigin(0.5);
         this.add.bitmapText(320,650,"kenneyFont", "Press SPACE to start", 32).setOrigin(0.5);
         this.input.keyboard.on('keydown-SPACE', ()=> {
             this.scene.start('BossScene');
