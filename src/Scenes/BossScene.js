@@ -36,7 +36,7 @@ class BossScene extends Phaser.Scene {
         });
         this.player = this.physics.add.sprite(320,730, "player").setScale(0.3);
         this.player.flipY = true;
-        this.playerHP = 5;
+        this.playerHP = 20;
         this.player.setCollideWorldBounds(true);
         this.playerDamage = 10;
         
@@ -60,7 +60,7 @@ class BossScene extends Phaser.Scene {
         const bounds = this.physics.world.bounds;
         const boss = this.physics.add.sprite(bounds.x+350, bounds.y+150, 'boss1').play('boss');
         boss.setScale(5);
-        boss.hp = 1000;
+        boss.hp = 5000;
 
         //boss's HP
         boss.hpText = this.add.text(boss.x, boss.y - 60, `HP: ${boss.hp}`, {
@@ -69,20 +69,32 @@ class BossScene extends Phaser.Scene {
         }).setOrigin(0.5, 0.5);
 
         enemies.add(boss);
-        let x = 0;
         let bulletCount = 0;
+        let dir = true;
+        let x = 0;
         const bulletTimer = this.time.addEvent({
-            delay: 500,
+            delay: 400,
             callback: () => {
-                if (bulletCount < 5) {
-                    this.bulletPattern1(boss, bulletCount * 5);
-                    bulletCount++;
-                } else {
-                    bulletCount = 0;
-                    bulletTimer.paused = true;
-                    this.time.delayedCall(1000, () => {
-                        bulletTimer.paused = false;
-                    });
+                if(boss.hp > 4000){  
+                    if(bulletCount < 5 && dir == true) {
+                        this.bulletPattern1(boss, x);
+                        x += 10;
+                        bulletCount++;
+                        if(bulletCount == 5)
+                            {
+                                dir = false;
+                                bulletCount = 0;
+                            }
+                    } else {
+                        this.bulletPattern1(boss, x);
+                        x -= 10;
+                        bulletCount++;
+                        if(bulletCount == 5)
+                            {
+                                dir = true;
+                                bulletCount = 0;
+                            }
+                    }
                 }
             },
             loop: true
@@ -92,16 +104,15 @@ class BossScene extends Phaser.Scene {
         this.bulletPattern1(boss);
     }
     bulletPattern1(boss,x){
-        for(let i = 0+x; i < 45+x; i++) {
-            const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet');
+        for(let i = 0; i < 45; i++) {
+            const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
             const v = 150;
-            bullet.setVelocityX(v*Math.cos(i));
-            bullet.setVelocityY(v*Math.sin(i));
+            bullet.setVelocityX(v*Math.cos((i/20*Math.PI)+x));
+            bullet.setVelocityY(v*Math.sin((i/20*Math.PI)+x));
             bullet.body.onWorldBounds = true;
             bullet.body.world.on('worldbounds', ()=>{
                 bullet.destroy();
             });
-
         }
     }
 
@@ -144,7 +155,7 @@ class BossScene extends Phaser.Scene {
         buff2.destroy(); 
         bulletsPerSecond += 1; 
 
-        this.time.removeAllEvents();
+        //this.time.removeAllEvents();
         this.startPlayerShooting();
     }
     
