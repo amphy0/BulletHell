@@ -74,7 +74,7 @@ class BossScene extends Phaser.Scene {
         let bulletCount = 0;
         let x = 0;
         const bulletTimer = this.time.addEvent({
-            delay: 10,
+            delay: 20,
             callback: () => {
                 if(boss.hp > 4000){
                     if (bulletCount < 500) {
@@ -90,12 +90,24 @@ class BossScene extends Phaser.Scene {
                     }
                 }
                 else if(boss.hp > 3000){
+                    if (bulletCount < 500) {
+                        this.bulletPattern2(boss, x);
+                        x += 110;
+                        bulletCount++;
+                    } else {
+                        bulletCount = 0;
+                        bulletTimer.paused = true;
+                        this.time.delayedCall(800, () => {
+                            bulletTimer.paused = false;
+                        });
+                    }
                     this.bulletPattern2(boss, x);
                     x += 110;
                 }
                 else if(boss.hp > 2000){
-                    this.bulletPattern2(boss, x);
-                    x += 110;
+                    this.bulletPattern3(boss, x);
+                    this.bulletPattern4(boss, x);
+                    x += 92;
                 }
                 else if(boss.hp > 1000){
                     this.bulletPattern2(boss, x);
@@ -109,7 +121,7 @@ class BossScene extends Phaser.Scene {
         });
     }
     bulletPattern1(boss,x){
-        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
+        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.4);
         const v = 100;
         bullet.setVelocityX(v*Math.cos((x/360*Math.PI)+x));
         bullet.setVelocityY(v*Math.sin((x/360*Math.PI)+x));
@@ -119,8 +131,28 @@ class BossScene extends Phaser.Scene {
         });
     }
     bulletPattern2(boss,x){
-        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
-        const v = 300;
+        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.4);
+        const v = 150;
+        bullet.setVelocityX(v*Math.cos((x/360*Math.PI)));
+        bullet.setVelocityY(v*Math.sin((x/360*Math.PI)));
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', ()=>{
+            bullet.destroy();
+        });
+    }
+    bulletPattern3(boss,x){
+        const bullet = this.enemyBullets.create(boss.x+100, boss.y, 'enemyBullet').setScale(0.4);
+        const v = 80;
+        bullet.setVelocityX(v*Math.cos((-x/360*Math.PI)));
+        bullet.setVelocityY(v*Math.sin((-x/360*Math.PI)));
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', ()=>{
+            bullet.destroy();
+        });
+    }
+    bulletPattern4(boss,x){
+        const bullet = this.enemyBullets.create(boss.x-100, boss.y, 'enemyBullet').setScale(0.4);
+        const v = 80;
         bullet.setVelocityX(v*Math.cos((x/360*Math.PI)));
         bullet.setVelocityY(v*Math.sin((x/360*Math.PI)));
         bullet.body.onWorldBounds = true;
