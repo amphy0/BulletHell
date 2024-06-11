@@ -56,6 +56,20 @@ class BossScene extends Phaser.Scene {
 
         this.spawnBoss();
         this.startPlayerShooting();
+
+        this.time.addEvent({
+            delay: 5000, // buff / 5 sec
+            callback: this.dropBuffRandom,
+            callbackScope: this,
+            loop: true
+        });
+
+        this.time.addEvent({
+            delay: 15000, // buff2 / 15 sec
+            callback: this.dropBuff2Random,
+            callbackScope: this,
+            loop: true
+        });
     }
     spawnBoss(){
         const bounds = this.physics.world.bounds;
@@ -179,17 +193,17 @@ class BossScene extends Phaser.Scene {
     }
 
     //buff
-    dropBuff(enemy) {
-        const x = enemy.x + Phaser.Math.Between(-150, 150);
-        const y = enemy.y + Phaser.Math.Between(-50, 50);
+    dropBuffRandom() {
+        const x = Phaser.Math.Between(0, this.physics.world.bounds.width);
+        const y = Phaser.Math.Between(0, this.physics.world.bounds.height / 2); 
         const buff = this.buffs.create(x, y, 'buff').setScale(0.3);
-        buff.setVelocityY(100); 
+        buff.setVelocityY(100);
     }
-    dropBuff2(enemy) {
-        const x = enemy.x + Phaser.Math.Between(-150, 150);
-        const y = enemy.y + Phaser.Math.Between(-50, 50);
+    dropBuff2Random() {
+        const x = Phaser.Math.Between(0, this.physics.world.bounds.width);
+        const y = Phaser.Math.Between(0, this.physics.world.bounds.height / 2); 
         const buff2 = this.buffs2.create(x, y, 'buff2').setScale(0.3);
-        buff2.setVelocityY(100); 
+        buff2.setVelocityY(100);
     }
 
     collectBuff(player, buff) {
@@ -210,10 +224,6 @@ class BossScene extends Phaser.Scene {
         bullet.destroy();
         enemy.hp -= this.playerDamage;
         enemy.hpText.setText(`HP: ${enemy.hp}`);
-        if(enemy.hp%this.playerDamage==0){   
-            this.dropBuff(enemy);
-            this.dropBuff2(enemy);
-        }
         if (enemy.hp <= 0) {
             enemy.destroy();
             enemy.hpText.destroy();
@@ -222,7 +232,7 @@ class BossScene extends Phaser.Scene {
 
     bulletHitPlayer(player, bullet) {
         bullet.destroy();
-        this.playerHP -= 1; // Adjust damage as needed
+        this.playerHP -= 1; 
     }
 
     
