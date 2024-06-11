@@ -37,10 +37,15 @@ class BossScene extends Phaser.Scene {
         });
         this.player = this.physics.add.sprite(320,730, "player").setScale(0.3);
         this.player.flipY = true;
-        this.playerHP = 1000;
+        this.playerHP = 30;
         this.player.setCollideWorldBounds(true);
         this.playerDamage = 10;
-        
+        this.score = 0;
+        this.scoreText = this.add.text(80, 20, `score: ${this.score}`, {
+            fontSize: '20px',
+            fill: '#ffffff'
+        }).setOrigin(0.5, 0.5);
+
         this.bullets = this.physics.add.group();
         this.enemyBullets = this.physics.add.group();
         this.buffs = this.physics.add.group();
@@ -223,6 +228,8 @@ class BossScene extends Phaser.Scene {
     bulletHitEnemy(bullet, enemy) {
         bullet.destroy();
         enemy.hp -= this.playerDamage;
+        this.score += this.playerDamage * 10;
+        this.scoreText.setText(`score: ${this.score}`);
         enemy.hpText.setText(`HP: ${enemy.hp}`);
         if (enemy.hp <= 0) {
             enemy.destroy();
@@ -264,7 +271,7 @@ class BossScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.buffs2, this.collectBuff2, null, this);
 
         if(this.playerHP <= 0){
-            this.updateScore();
+            this.registry.set('Score', this.score);
             this.scene.start('gameOver');
         }
     }
