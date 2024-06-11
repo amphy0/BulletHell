@@ -3,6 +3,7 @@ let fireRate = 150;
 let lastShotTime = 0;
 let playerVelocity = 140;
 let bulletsPerSecond = 1;
+let bulletlevel = 1;
 class BossScene extends Phaser.Scene {
     constructor() {
         super("BossScene");
@@ -36,7 +37,7 @@ class BossScene extends Phaser.Scene {
         });
         this.player = this.physics.add.sprite(320,730, "player").setScale(0.3);
         this.player.flipY = true;
-        this.playerHP = 20;
+        this.playerHP = 1000;
         this.player.setCollideWorldBounds(true);
         this.playerDamage = 10;
         
@@ -69,51 +70,63 @@ class BossScene extends Phaser.Scene {
         }).setOrigin(0.5, 0.5);
 
         enemies.add(boss);
-        let bulletCount = 0;
         let dir = true;
+        let bulletCount = 0;
         let x = 0;
         const bulletTimer = this.time.addEvent({
-            delay: 400,
+            delay: 10,
             callback: () => {
-                if(boss.hp > 4000){  
-                    if(bulletCount < 5 && dir == true) {
+                if(boss.hp > 4000){
+                    if (bulletCount < 500) {
                         this.bulletPattern1(boss, x);
-                        x += 10;
+                        x += 60;
                         bulletCount++;
-                        if(bulletCount == 5)
-                            {
-                                dir = false;
-                                bulletCount = 0;
-                            }
                     } else {
-                        this.bulletPattern1(boss, x);
-                        x -= 10;
-                        bulletCount++;
-                        if(bulletCount == 5)
-                            {
-                                dir = true;
-                                bulletCount = 0;
-                            }
+                        bulletCount = 0;
+                        bulletTimer.paused = true;
+                        this.time.delayedCall(800, () => {
+                            bulletTimer.paused = false;
+                        });
                     }
+                }
+                else if(boss.hp > 3000){
+                    this.bulletPattern2(boss, x);
+                    x += 110;
+                }
+                else if(boss.hp > 2000){
+                    this.bulletPattern2(boss, x);
+                    x += 110;
+                }
+                else if(boss.hp > 1000){
+                    this.bulletPattern2(boss, x);
+                    x += 110;
+                }
+                else if(boss.hp > 1){
+                    this.bulletPattern2(boss,x);
                 }
             },
             loop: true
         });
     }
-    bossShootBullet(boss){
-        this.bulletPattern1(boss);
-    }
     bulletPattern1(boss,x){
-        for(let i = 0; i < 45; i++) {
-            const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
-            const v = 150;
-            bullet.setVelocityX(v*Math.cos((i/20*Math.PI)+x));
-            bullet.setVelocityY(v*Math.sin((i/20*Math.PI)+x));
-            bullet.body.onWorldBounds = true;
-            bullet.body.world.on('worldbounds', ()=>{
-                bullet.destroy();
-            });
-        }
+        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
+        const v = 100;
+        bullet.setVelocityX(v*Math.cos((x/360*Math.PI)+x));
+        bullet.setVelocityY(v*Math.sin((x/360*Math.PI)+x));
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', ()=>{
+            bullet.destroy();
+        });
+    }
+    bulletPattern2(boss,x){
+        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.5);
+        const v = 300;
+        bullet.setVelocityX(v*Math.cos((x/360*Math.PI)));
+        bullet.setVelocityY(v*Math.sin((x/360*Math.PI)));
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', ()=>{
+            bullet.destroy();
+        });
     }
 
     shootBullet() {
@@ -165,8 +178,10 @@ class BossScene extends Phaser.Scene {
         bullet.destroy();
         enemy.hp -= this.playerDamage;
         enemy.hpText.setText(`HP: ${enemy.hp}`);
-        this.dropBuff(enemy);
-        this.dropBuff2(enemy);
+        if(enemy.hp%this.playerDamage==0){   
+            this.dropBuff(enemy);
+            this.dropBuff2(enemy);
+        }
         if (enemy.hp <= 0) {
             enemy.destroy();
             enemy.hpText.destroy();
