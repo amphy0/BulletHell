@@ -16,6 +16,7 @@ class GameStart extends Phaser.Scene{
         this.load.image('boss2', 'KingSlime_Idle2.png');
         this.load.image('boss3', 'KingSlime_Idle3.png');
         this.load.image('boss4', 'KingSlime_Idle4.png');
+    
         
     }
     create(){
@@ -27,6 +28,7 @@ class GameStart extends Phaser.Scene{
         this.add.image(150,450,'space2').setScale(3);
         this.add.image(190,450,'space3').setScale(3);
         this.add.image(430,300,'boss1').setScale(1.5);
+        
         this.add.bitmapText(150,200,"kenneyFont", "Controls", 32).setOrigin(0.5);
         this.add.bitmapText(150,350,"kenneyFont", "to move", 32).setOrigin(0.5);
         this.add.bitmapText(150,500,"kenneyFont", "to shoot", 32).setOrigin(0.5);

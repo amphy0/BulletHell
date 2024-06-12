@@ -19,8 +19,22 @@ class BossScene extends Phaser.Scene {
 
         this.load.image("playerBullet", "playerbullet.png");
 
+        this.load.image('heart', 'heart.png');
+
         this.load.image("buff", "buff.png");
         this.load.image("buff2", "buff2.png");
+
+        this.load.image("background", "b1.png");
+
+        this.load.audio('bgm', 'bgm01.ogg');
+
+        this.load.audio('biu', 'shootingsound.ogg');
+
+        // For animation
+        this.load.image("explosion00", "explosion00.png");
+        this.load.image("explosion01", "explosion01.png");
+        this.load.image("explosion02", "explosion02.png");
+        this.load.image("explosion03", "explosion03.png");
     }
 
     create(){
@@ -35,6 +49,18 @@ class BossScene extends Phaser.Scene {
             frameRate: 6,
             repeat: -1
         });
+
+        this.anims.create({
+            key: 'explosion',
+            frames: [
+                { key: 'explosion00' },
+                { key: 'explosion01' },
+                { key: 'explosion02' },
+                { key: 'explosion03' }
+            ],
+            frameRate: 10,
+            repeat: 0
+        });
         this.player = this.physics.add.sprite(320,730, "player").setScale(0.3);
         this.player.flipY = true;
         this.playerHP = 30;
@@ -45,6 +71,15 @@ class BossScene extends Phaser.Scene {
             fontSize: '20px',
             fill: '#ffffff'
         }).setOrigin(0.5, 0.5);
+
+
+        this.background = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'background');
+        this.background.setOrigin(0, 0);
+        this.background.displayWidth = game.config.width;
+        this.background.displayHeight = game.config.height;
+        this.background.setDepth(-1);
+
+        
 
         this.bullets = this.physics.add.group();
         this.enemyBullets = this.physics.add.group();
@@ -74,6 +109,15 @@ class BossScene extends Phaser.Scene {
             callback: this.dropBuff2Random,
             callbackScope: this,
             loop: true
+        });
+
+        this.bgm = this.sound.add('bgm', { loop: true });
+        this.bgm.play();
+
+        this.heart = this.add.image(640, 20, 'heart').setScale(1.8);
+        this.hpText = this.add.text(650, 10, ` ${this.playerHP}`, {
+        fontSize: '20px',
+        fill: '#ffffff'
         });
     }
     spawnBoss(){
@@ -135,6 +179,10 @@ class BossScene extends Phaser.Scene {
                 else if(boss.hp > 1){
                     this.bulletPattern2(boss,x);
                 }
+                else if(boss.hp <= 0){
+                    this.registry.set('Score', this.score);
+                    this.scene.start('gameOver');
+                }
             },
             loop: true
         });
@@ -187,6 +235,7 @@ class BossScene extends Phaser.Scene {
         bullet.body.world.on('worldbounds', () => {
             bullet.destroy();
         });
+        this.sound.play('biu');
     }
     startPlayerShooting() {
         this.time.addEvent({
@@ -231,6 +280,13 @@ class BossScene extends Phaser.Scene {
         this.score += this.playerDamage * 10;
         this.scoreText.setText(`score: ${this.score}`);
         enemy.hpText.setText(`HP: ${enemy.hp}`);
+
+        const explosion = this.add.sprite(enemy.x, enemy.y, 'explosion00').setScale(0.2);
+        explosion.play('explosion');
+        explosion.on('animationcomplete', () => {
+            explosion.destroy();
+        });
+
         if (enemy.hp <= 0) {
             enemy.destroy();
             enemy.hpText.destroy();
@@ -240,6 +296,7 @@ class BossScene extends Phaser.Scene {
     bulletHitPlayer(player, bullet) {
         bullet.destroy();
         this.playerHP -= 1; 
+        this.hpText.setText(` ${this.playerHP}`);
     }
 
     
@@ -274,5 +331,6 @@ class BossScene extends Phaser.Scene {
             this.registry.set('Score', this.score);
             this.scene.start('gameOver');
         }
+        
     }
 }
