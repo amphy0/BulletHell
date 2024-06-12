@@ -98,14 +98,14 @@ class BossScene extends Phaser.Scene {
         this.startPlayerShooting();
 
         this.time.addEvent({
-            delay: 5000, // buff / 5 sec
+            delay: 2500, // buff / 5 sec
             callback: this.dropBuffRandom,
             callbackScope: this,
             loop: true
         });
 
         this.time.addEvent({
-            delay: 15000, // buff2 / 15 sec
+            delay: 7500, // buff2 / 15 sec
             callback: this.dropBuff2Random,
             callbackScope: this,
             loop: true
@@ -124,7 +124,7 @@ class BossScene extends Phaser.Scene {
         const bounds = this.physics.world.bounds;
         const boss = this.physics.add.sprite(bounds.x+350, bounds.y+150, 'boss1').play('boss');
         boss.setScale(5);
-        boss.hp = 5000;
+        boss.hp = 10000;
 
         //boss's HP
         boss.hpText = this.add.text(boss.x, boss.y - 60, `HP: ${boss.hp}`, {
@@ -139,7 +139,7 @@ class BossScene extends Phaser.Scene {
         const bulletTimer = this.time.addEvent({
             delay: 20,
             callback: () => {
-                if(boss.hp > 4000){
+                if(boss.hp > 9000){
                     if (bulletCount < 500) {
                         this.bulletPattern1(boss, x);
                         x += 60;
@@ -152,7 +152,7 @@ class BossScene extends Phaser.Scene {
                         });
                     }
                 }
-                else if(boss.hp > 3000){
+                else if(boss.hp > 8000){
                     if (bulletCount < 500) {
                         this.bulletPattern2(boss, x);
                         x += 110;
@@ -167,17 +167,27 @@ class BossScene extends Phaser.Scene {
                     this.bulletPattern2(boss, x);
                     x += 110;
                 }
-                else if(boss.hp > 2000){
+                else if(boss.hp > 6000){
                     this.bulletPattern3(boss, x);
                     this.bulletPattern4(boss, x);
                     x += 92;
                 }
-                else if(boss.hp > 1000){
-                    this.bulletPattern2(boss, x);
-                    x += 110;
+                else if(boss.hp > 4000){
+                    if (bulletCount < 90) {
+                        this.bulletPattern5(boss, x);
+                        x += 25;
+                        bulletCount++;
+                    } else {
+                        bulletCount = 0;
+                        bulletTimer.paused = true;
+                        this.time.delayedCall(1000, () => {
+                            bulletTimer.paused = false;
+                        });
+                    }
                 }
                 else if(boss.hp > 1){
-                    this.bulletPattern2(boss,x);
+                    this.bulletPattern5(boss, x);
+                    x += 180
                 }
                 else if(boss.hp <= 0){
                     this.registry.set('Score', this.score);
@@ -204,6 +214,14 @@ class BossScene extends Phaser.Scene {
         const v = 150;
         bullet.setVelocityX(v*Math.cos((x/360*Math.PI)));
         bullet.setVelocityY(v*Math.sin((x/360*Math.PI)));
+        this.time.addEvent({
+            delay: 3500,
+            callback: ()=>{
+                
+                bullet.setVelocityX(v/4*Math.cos((x/360*Math.PI)));
+                bullet.setVelocityY(v/4*Math.sin((x/360*Math.PI)));
+            }
+        })
         bullet.body.onWorldBounds = true;
         bullet.body.world.on('worldbounds', ()=>{
             bullet.destroy();
@@ -229,7 +247,24 @@ class BossScene extends Phaser.Scene {
             bullet.destroy();
         });
     }
-
+    bulletPattern5(boss,x){
+        const bullet = this.enemyBullets.create(boss.x, boss.y, 'enemyBullet').setScale(0.4);
+        let v = 300;
+        bullet.setVelocityX(v*Math.cos((Math.PI)+0.35*x));
+        bullet.setVelocityY(v*Math.sin((Math.PI)+0.35*x));
+        this.time.addEvent({
+            delay: 2000,
+            callback: ()=>{
+                v *= -1;
+                bullet.setVelocityX(v*Math.cos((Math.PI)+0.35*x));
+                bullet.setVelocityY(v*Math.sin((Math.PI)+0.35*x));
+            }
+        })
+        bullet.body.onWorldBounds = true;
+        bullet.body.world.on('worldbounds', ()=>{
+            bullet.destroy();
+        });
+    }
     shootBullet() {
         const bullet = this.bullets.create(this.player.x, this.player.y - 20, 'playerBullet').setScale(0.5);
         bullet.setVelocityY(-300);
