@@ -181,7 +181,9 @@ class BossScene extends Phaser.Scene {
                 }
                 else if(boss.hp <= 0){
                     this.registry.set('Score', this.score);
+                    this.bgm.stop();
                     this.scene.start('gameOver');
+                    
                 }
             },
             loop: true
@@ -329,6 +331,7 @@ class BossScene extends Phaser.Scene {
 
         if(this.playerHP <= 0){
             this.registry.set('Score', this.score);
+            this.bgm.stop();
             this.scene.start('gameOver');
         }
         
